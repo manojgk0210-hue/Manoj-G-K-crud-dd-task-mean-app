@@ -1,42 +1,67 @@
 pipeline {
     agent any
 
+    // This tells Jenkins to check GitHub for new commits every minute
+    triggers {
+        pollSCM('* * * * *') 
+    }
+
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
-        IMAGE_NAME = "projectimages/mean-app"
+        DOCKER_USER  = "manojgk1089"
+        API_REPO     = "mean-api"
+        WEB_REPO     = "mean-frontend"
+        BUILD_TAG    = "build-${env.BUILD_NUMBER}"
+        DOCKER_TOKEN = "your_token_here"
     }
 
     stages {
-
-        stage('Checkout Code') {
+        stage('1. Git Clone') {
             steps {
-                git 'https://github.com/manojgk0210-hue/Manoj-G-K-crud-dd-task-mean-app.git'
+                git branch: 'master', url: 'https://github.com/manojgk0210-hue/Manoj-G-K-crud-dd-task-mean-app.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('2. Build Images') {
             steps {
-                script {
-                    dockerImage = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}")
-                }
+                sh '''
+                    docker build -t ${DOCKER_USER}/${API_REPO}:${BUILD_TAG} ./backend
+                    docker build -t ${DOCKER_USER}/${WEB_REPO}:${BUILD_TAG} ./frontend
+                '''
             }
         }
 
-        stage('Login to DockerHub') {
+        stage('3. Login and Push') {
             steps {
-                sh """
-                echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
-                """
+                sh '''
+                    echo "${DOCKER_TOKEN}" | docker login -u ${DOCKER_USER} --password-stdin
+
+                    # Push versioned build
+                    docker push ${DOCKER_USER}/${API_REPO}:${BUILD_TAG}
+                    docker push ${DOCKER_USER}/${WEB_REPO}:${BUILD_TAG}
+                    
+                    # Update 'latest' tag
+                    docker tag ${DOCKER_USER}/${API_REPO}:${BUILD_TAG} ${DOCKER_USER}/${API_REPO}:latest
+                    docker tag ${DOCKER_USER}/${WEB_REPO}:${BUILD_TAG} ${DOCKER_USER}/${WEB_REPO}:latest
+                    
+                    docker push ${DOCKER_USER}/${API_REPO}:latest
+                    docker push ${DOCKER_USER}/${WEB_REPO}:latest
+                '''
             }
         }
 
-        stage('Push Docker Image') {
+        stage('4. Cleanup') {
             steps {
-                script {
-                    dockerImage.push("${BUILD_NUMBER}")
-                    dockerImage.push("latest")
-                }
+                sh "docker rmi ${DOCKER_USER}/${API_REPO}:${BUILD_TAG} ${DOCKER_USER}/${WEB_REPO}:${BUILD_TAG} || true"
             }
+        }
+    }
+
+    post {
+        success {
+            echo "New commit detected and pushed as Build #${env.BUILD_NUMBER}"
+        }
+        always {
+            sh 'docker logout'
         }
     }
 }

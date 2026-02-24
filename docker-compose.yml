@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Database Service (Using official image, no need to push)
   mongodb:
     image: mongo:latest
     ports:
@@ -9,10 +8,9 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  # Backend Service
   api:
     build: ./backend
-    image: manojgk0210/mean-api:latest  # <--- Added Docker Hub destination
+    image: manojgk0210/mean-api:latest  
     ports:
       - "8080:8080"
     environment:
@@ -21,10 +19,9 @@ services:
     depends_on:
       - mongodb
 
-  # Frontend Service
   web:
     build: ./frontend
-    image: manojgk0210/mean-frontend:latest # <--- Added Docker Hub destination
+    image: manojgk0210/mean-frontend:latest
     ports:
       - "8081:80"
     depends_on:
