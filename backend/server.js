@@ -1,7 +1,11 @@
 const express = require("express");
-//const cors = require("cors");
+const cors = require("cors"); // 1. Uncommented
 
 const app = express();
+
+// 2. Add CORS configuration
+// This allows your Angular app to send data to this API
+app.use(cors()); 
 
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -10,6 +14,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const db = require("./app/models");
+
+// 3. Recommended: Removed process.exit() to prevent container loops
 db.mongoose
   .connect(db.url, {
     useNewUrlParser: true,
@@ -20,7 +26,7 @@ db.mongoose
   })
   .catch(err => {
     console.log("Cannot connect to the database!", err);
-    process.exit();
+    // Removed process.exit(); so the server keeps trying/running
   });
 
 // simple route
@@ -30,7 +36,6 @@ app.get("/", (req, res) => {
 
 require("./app/routes/turorial.routes")(app);
 
-// set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
