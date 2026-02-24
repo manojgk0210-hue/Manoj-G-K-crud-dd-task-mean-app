@@ -19,115 +19,137 @@ Run `node server.js`
 cd frontend
 
 npm install
+MEAN Stack CRUD Application with Docker and Jenkins
+Introduction
 
-MEAN Stack CRUD Application Deployment
-This project consists of a full-stack CRUD (Create, Read, Update, Delete) application for managing tutorials. It is built using the MEAN stack and is fully containerized and automated via a Jenkins CI/CD pipeline.
+This project is a full-stack CRUD application built using the MEAN stack (MongoDB, Express, Angular, Node.js). The application is fully containerized using Docker and managed using Docker Compose. A Jenkins pipeline is included to automate Docker image building and container deployment.
 
-Project Overview
-The application manages a Tutorial collection with the following data structure:
+This project demonstrates practical DevOps concepts such as containerization, multi-container orchestration, and CI automation.
 
-ID
+Project Architecture
 
-Title
+The application consists of three main services:
 
-Description
+Frontend: Angular application
 
-Published Status
-
-Features
-Create new tutorials.
-
-Retrieve all tutorials or search by title.
-
-Update existing tutorial details.
-
-Delete individual tutorials or all tutorials at once.
-
-Technical Stack
-Frontend: Angular 15
-
-Backend: Node.js and Express
+Backend: Node.js and Express REST API
 
 Database: MongoDB
 
-CI/CD: Jenkins
+The frontend communicates with the backend API, and the backend connects to MongoDB for data storage.
 
-Containerization: Docker
+All services run inside separate Docker containers.
 
-Manual Local Setup
-Backend (Node.js Server)
-Navigate to the backend directory:
-cd backend
+Technologies Used
 
-Install dependencies:
-npm install
+Node.js
 
-Database Configuration:
-Update your MongoDB credentials in app/config/db.config.js.
+Express.js
 
-Start the server:
-node server.js
+Angular
 
-Frontend (Angular Client)
-Navigate to the frontend directory:
-cd frontend
+MongoDB
 
-Install dependencies:
-npm install
+Docker
 
-Service Configuration:
-Modify src/app/services/tutorial.service.ts to adjust the API base URL if necessary.
+Docker Compose
 
-Start the client:
-ng serve --port 8081
+Jenkins
 
-Access the application:
-Open your browser and navigate to http://localhost:8081/
+Git
 
-DevOps and Automation
-Dockerization
-The application is split into two main Docker images:
+Project Structure
+project-root/
+│
+├── api/                    # Backend source code
+│   ├── Dockerfile
+│   └── package.json
+│
+├── web/                    # Frontend source code
+│   ├── Dockerfile
+│   └── package.json
+│
+├── docker-compose.yml      # Docker Compose configuration
+├── Jenkinsfile             # Jenkins CI pipeline
+└── README.md
+Prerequisites
 
-Backend API: manojgk1089/mean-api
+Make sure the following tools are installed on your system:
 
-Frontend Web: manojgk1089/mean-frontend
+Docker
 
-Jenkins CI/CD Pipeline
-The included Jenkinsfile automates the following workflow:
+Docker Compose
 
-Source Control: Automatically detects changes (commits) on the GitHub master branch.
+Git
 
-Versioning: Tags every new build with a unique version number (e.g., build-42) using the ${env.BUILD_NUMBER} variable.
+Jenkins (if running CI pipeline)
 
-Authentication: Securely logs into Docker Hub using a Personal Access Token.
+To verify Docker installation:
 
-Build & Push: Builds both Docker images and pushes them to the Docker Hub registry.
+docker --version
+docker compose version
+Running the Application Using Docker Compose
 
-Latest Tagging: Always updates the latest tag to point to the most recent successful build.
+Navigate to the root directory of the project where the docker-compose.yml file is located.
 
-Cleanup: Removes local Docker images from the Jenkins agent to optimize disk space.
+Build and start all services
+docker compose up -d --build
 
-Important Commands
-Docker Compose (Build and Run)
-To run the entire stack (Database, Backend, and Frontend) with one command:
-docker-compose up --build -d
+This command will:
 
-Docker Manual Push (Example)
-To manually tag and push an image (replace [BUILD_NO] with your version):
-docker tag mean-api:latest manojgk1089/mean-api:[BUILD_NO]
-docker push manojgk1089/mean-api:[BUILD_NO]
+Build Docker images
 
-Checking Logs
-To check the logs of the running backend container:
-docker logs [container_id_or_name]
+Create containers
 
-Environment Notes
-Jenkins Credentials: Ensure you have a credential ID dockerhub-creds configured in Jenkins or use the environment variable method for the Docker Hub Token.
+Start all services in detached mode
 
-Port Mapping: The frontend is configured to run on port 8081. Ensure this port is open in your security groups or firewall.
+Stop all services
+docker compose down
+Stop and remove volumes (this deletes database data)
+docker compose down -v
+Application Access
 
-Run `ng serve --port 8081`
+After running Docker Compose, the application will be available at:
 
-You can modify the `src/app/services/tutorial.service.ts` file to adjust how the frontend interacts with the backend.
+Frontend:
 
-Navigate to `http://localhost:8081/`
+http://localhost:8081
+
+Backend API:
+
+http://localhost:8080
+
+MongoDB:
+
+Port 27017
+
+If running on a cloud server (for example EC2), make sure required ports are open in the security group.
+
+Building Docker Images Manually
+
+If you want to build images without Docker Compose:
+
+Build backend image
+docker build -t mean-app-api ./api
+Build frontend image
+docker build -t mean-app-web ./web
+Running Containers Manually
+Run MongoDB
+docker run -d -p 27017:27017 --name mongodb mongo
+Run backend container
+docker run -d -p 8080:8080 --name api mean-app-api
+Run frontend container
+docker run -d -p 8081:80 --name web mean-app-web
+Jenkins CI Pipeline
+
+This project includes a Jenkins pipeline that automates Docker image building and container execution.
+
+The pipeline performs the following steps:
+
+Removes any existing container
+
+Builds a new Docker image
+
+Tags the image using the Jenkins build number
+
+Runs the container
