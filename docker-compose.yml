@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Database Service
+  # Database Service (Using official image, no need to push)
   mongodb:
     image: mongo:latest
     ports:
@@ -12,11 +12,11 @@ services:
   # Backend Service
   api:
     build: ./backend
+    image: manojgk0210/mean-api:latest  # <--- Added Docker Hub destination
     ports:
       - "8080:8080"
     environment:
       - NODE_ENV=production
-      # This matches the service name 'mongodb'
       - DB_URL=mongodb://mongodb:27017/tutorial_db 
     depends_on:
       - mongodb
@@ -24,6 +24,7 @@ services:
   # Frontend Service
   web:
     build: ./frontend
+    image: manojgk0210/mean-frontend:latest # <--- Added Docker Hub destination
     ports:
       - "8081:80"
     depends_on:
