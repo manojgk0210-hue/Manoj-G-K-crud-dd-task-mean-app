@@ -1,35 +1,33 @@
-version: "3.9"
+version: '3.8'
 
 services:
-
+  # Database Service
   mongodb:
-    image: mongo:6
-    container_name: mongodb
-    restart: always
+    image: mongo:latest
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
 
-  backend:
+  # Backend Service
+  api:
     build: ./backend
-    container_name: backend
-    restart: always
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=mongodb
+      - NODE_ENV=production
+      # This matches the service name 'mongodb'
+      - DB_URL=mongodb://mongodb:27017/tutorial_db 
     depends_on:
       - mongodb
 
-  frontend:
+  # Frontend Service
+  web:
     build: ./frontend
-    container_name: frontend
-    restart: always
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
-      - backend
+      - api
 
 volumes:
   mongo-data:
