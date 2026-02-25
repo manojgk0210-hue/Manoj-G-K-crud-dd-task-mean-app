@@ -11,7 +11,7 @@ pipeline {
         API_REPO     = "mean-api"
         WEB_REPO     = "mean-frontend"
         BUILD_TAG    = "build-${env.BUILD_NUMBER}"
-        DOCKER_TOKEN = "your_token_here"
+        DOCKER_TOKEN = "dckr_pat_9nhGBjEHjUnlWdTzIcSwjNUFORw"
     }
 
     stages {
